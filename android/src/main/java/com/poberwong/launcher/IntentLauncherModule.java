@@ -75,6 +75,9 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
         if (params.hasKey(ATTR_CATEGORY)) {
             intent.addCategory(params.getString(ATTR_CATEGORY));
         }
+        if (params.hasKey(ATTR_PACKAGE_NAME)) {
+            intent.setPackage(params.getString(ATTR_PACKAGE_NAME));
+        }
         getReactApplicationContext().startActivityForResult(intent, REQUEST_CODE, null); // 暂时使用当前应用的任务栈
     }
 
