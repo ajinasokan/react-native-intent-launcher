@@ -13,6 +13,9 @@ import java.io.Console;
 import java.util.Set;
 import java.util.Iterator;
 
+import android.content.pm.PackageManager;
+import android.content.Context;
+
 /**
  * Created by poberwong on 16/6/30.
  */
@@ -27,15 +30,29 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
     private static final String ATTR_PACKAGE_NAME = "packageName";
     private static final String ATTR_CLASS_NAME = "className";
     Promise promise;
+    Context context;
 
     public IntentLauncherModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        this.context = reactContext;
         reactContext.addActivityEventListener(this);
     }
 
     @Override
     public String getName() {
         return "IntentLauncher";
+    }
+
+    @ReactMethod
+    public void appInstalledOrNot(String uri, Promise promise) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
+            promise.resolve(true);
+            return;
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+        promise.resolve(false);
     }
 
     /**
@@ -78,7 +95,11 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule implements 
         if (params.hasKey(ATTR_PACKAGE_NAME)) {
             intent.setPackage(params.getString(ATTR_PACKAGE_NAME));
         }
-        getReactApplicationContext().startActivityForResult(intent, REQUEST_CODE, null); // 暂时使用当前应用的任务栈
+        try{
+            getReactApplicationContext().startActivityForResult(intent, REQUEST_CODE, null);
+        } catch (Exception e) {
+            this.promise.reject("Unable to initiate UPI app", e);
+        }
     }
 
     @Override
